@@ -1,8 +1,24 @@
 import { useStore } from '../../store/useStore';
 import { HeartPulse, Activity, Syringe, Users } from 'lucide-react';
+import { useState } from 'react';
+import Modal from '../../components/ui/Modal';
 
 export default function HealthDashboard() {
   const data = useStore((state) => state.healthData);
+  const addRecord = useStore((state) => state.addRecord);
+
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [formData, setFormData] = useState({ campName: '', location: '', beneficiaries: '', date: '' });
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    if (!formData.campName || !formData.location) return;
+    
+    addRecord('health', formData);
+    
+    setFormData({ campName: '', location: '', beneficiaries: '', date: '' });
+    setIsModalOpen(false);
+  };
 
   return (
     <div className="space-y-6">
@@ -33,7 +49,7 @@ export default function HealthDashboard() {
       <div className="bg-base-100/90 rounded-2xl border border-base-content/10 overflow-hidden">
         <div className="p-4 border-b border-base-200 flex justify-between items-center">
           <h2 className="font-semibold text-base-content">Camp Logs</h2>
-          <button className="btn btn-sm btn-primary">Schedule Camp</button>
+          <button onClick={() => setIsModalOpen(true)} className="btn btn-sm btn-primary">Schedule Camp</button>
         </div>
         <table className="table w-full text-sm">
           <thead className="bg-base-200/30 text-base-content/60">
@@ -62,6 +78,59 @@ export default function HealthDashboard() {
           </tbody>
         </table>
       </div>
+
+      <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} title="Schedule Health Camp">
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <label className="label text-sm font-semibold">Camp Name</label>
+            <input 
+              type="text" 
+              className="input input-bordered w-full bg-base-200/50 focus:bg-base-100" 
+              placeholder="e.g. Eye Checkup Drive"
+              value={formData.campName}
+              onChange={(e) => setFormData({...formData, campName: e.target.value})}
+              required
+            />
+          </div>
+          <div>
+            <label className="label text-sm font-semibold">Location</label>
+            <input 
+              type="text" 
+              className="input input-bordered w-full bg-base-200/50 focus:bg-base-100" 
+              placeholder="e.g. Dharavi"
+              value={formData.location}
+              onChange={(e) => setFormData({...formData, location: e.target.value})}
+              required
+            />
+          </div>
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="label text-sm font-semibold">Expected Beneficiaries</label>
+              <input 
+                type="number" 
+                className="input input-bordered w-full bg-base-200/50 focus:bg-base-100" 
+                placeholder="0"
+                value={formData.beneficiaries}
+                onChange={(e) => setFormData({...formData, beneficiaries: e.target.value})}
+              />
+            </div>
+            <div>
+              <label className="label text-sm font-semibold">Date</label>
+              <input 
+                type="date" 
+                className="input input-bordered w-full bg-base-200/50 focus:bg-base-100" 
+                value={formData.date}
+                onChange={(e) => setFormData({...formData, date: e.target.value})}
+                required
+              />
+            </div>
+          </div>
+          <div className="modal-action pt-4">
+            <button type="button" className="btn btn-ghost" onClick={() => setIsModalOpen(false)}>Cancel</button>
+            <button type="submit" className="btn btn-primary">Save Camp</button>
+          </div>
+        </form>
+      </Modal>
     </div>
   );
 }
